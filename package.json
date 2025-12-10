@@ -1,0 +1,29 @@
+{
+  "name": "gobbledata-backend",
+  "version": "1.0.0",
+  "description": "GobbleData Backend API - Generates daily GA4 insights",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "echo \"Tests coming soon\" && exit 0"
+  },
+  "keywords": ["analytics", "ga4", "insights"],
+  "author": "GobbleData",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3",
+    "googleapis": "^128.0.0",
+    "nodemailer": "^6.9.7",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

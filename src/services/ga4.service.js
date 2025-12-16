@@ -12,7 +12,7 @@ const oauth2Client = new google.auth.OAuth2(
 // Scopes we need (read-only access to Analytics)
 const SCOPES = [
   "https://www.googleapis.com/auth/analytics.readonly",
-  "https://www.googleapis.com/auth/analytics"
+  "https://www.googleapis.com/auth/analytics",
 ];
 
 export const ga4Service = {

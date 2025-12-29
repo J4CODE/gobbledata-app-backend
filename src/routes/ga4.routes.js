@@ -132,6 +132,14 @@ router.get("/callback", async (req, res) => {
     }
 
     console.log("💾 Connection saved to database");
+    console.log("💾 Connection saved to database");
+    console.log(
+      `🔀 Redirecting to: ${
+        config.frontendUrls[0]
+      }/dashboard?ga4_connected=true&property=${encodeURIComponent(
+        firstProperty.propertyName
+      )}`
+    );
 
     // Redirect back to dashboard with success
     res.redirect(

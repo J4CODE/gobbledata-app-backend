@@ -155,6 +155,11 @@ router.get("/callback", async (req, res) => {
   }
 });
 
+// Allow CORS preflight for /properties
+router.options("/properties", (req, res) => {
+  res.status(200).end();
+});
+
 /**
  * ROUTE 3: Get user's connected properties
  * GET /api/ga4/properties

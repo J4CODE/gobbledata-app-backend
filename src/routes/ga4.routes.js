@@ -65,7 +65,7 @@ router.get("/callback", async (req, res) => {
     const { code, state: userId } = req.query;
 
     if (!code) {
-      return res.redirect(`${config.frontendUrl}/dashboard?error=no_code`);
+      return res.redirect(`${config.frontendUrls[0]}/dashboard?error=no_code`);
     }
 
     console.log("📥 OAuth callback received for user:", userId);
@@ -74,7 +74,7 @@ router.get("/callback", async (req, res) => {
     const tokens = await ga4Service.getTokensFromCode(code);
 
     if (!tokens.access_token) {
-      return res.redirect(`${config.frontendUrl}/dashboard?error=no_token`);
+      return res.redirect(`${config.frontendUrls[0]}/dashboard?error=no_token`);
     }
 
     console.log("✅ Tokens received");
@@ -93,7 +93,7 @@ router.get("/callback", async (req, res) => {
     if (!properties || properties.length === 0) {
       console.log("⚠️  No GA4 properties found - user needs to set one up");
       return res.redirect(
-        `${config.frontendUrl}/dashboard?error=no_ga4_properties&message=No GA4 properties found. Please set one up in Google Analytics.`
+        `${config.frontendUrls[0]}/dashboard?error=no_ga4_properties&message=No GA4 properties found. Please set one up in Google Analytics.`
       );
     }
 
@@ -128,7 +128,7 @@ router.get("/callback", async (req, res) => {
 
     if (error) {
       console.error("Database error:", error);
-      return res.redirect(`${config.frontendUrl}/dashboard?error=db_error`);
+      return res.redirect(`${config.frontendUrls[0]}/dashboard?error=db_error`);
     }
 
     console.log("💾 Connection saved to database");
@@ -136,14 +136,14 @@ router.get("/callback", async (req, res) => {
     // Redirect back to dashboard with success
     res.redirect(
       `${
-        config.frontendUrl
+        config.frontendUrls[0]
       }/dashboard?ga4_connected=true&property=${encodeURIComponent(
         firstProperty.propertyName
       )}`
     );
   } catch (error) {
     console.error("Callback error:", error);
-    res.redirect(`${config.frontendUrl}/dashboard?error=callback_failed`);
+    res.redirect(`${config.frontendUrls[0]}/dashboard?error=callback_failed`);
   }
 });
 

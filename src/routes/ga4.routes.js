@@ -8,6 +8,10 @@ import {
 } from "../services/supabase.service.js";
 import { config } from "../config/index.js";
 import * as emailService from "../services/email.service.js";
+import {
+  checkTrialStatus,
+  checkPropertyLimit,
+} from "../middleware/subscription.middleware.js";
 
 const router = express.Router();
 
@@ -60,6 +64,7 @@ router.get("/connect", async (req, res) => {
  * ROUTE 2: Handle OAuth callback
  * GET /api/ga4/callback?code=xyz&state=userId
  */
+
 router.get("/callback", async (req, res) => {
   try {
     const { code, state: userId } = req.query;
@@ -99,55 +104,37 @@ router.get("/callback", async (req, res) => {
 
     console.log(`📊 Found ${properties.length} GA4 properties`);
 
-    // For MVP: Just use first property
-    const firstProperty = properties[0];
+    // DON'T auto-save anymore - redirect to property selector instead
 
-    // Save connection to database
+    // Store tokens and properties in a temporary token (5 min expiry)
+    const crypto = await import("crypto");
+    const tempToken = crypto.randomBytes(32).toString("hex");
 
-    const { data, error } = await supabaseAdmin
-      .from("ga4_connections")
-      .upsert(
-        {
-          user_id: userId,
-          property_id: firstProperty.propertyId,
-          property_name: firstProperty.propertyName,
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
-          token_expires_at: new Date(
-            Date.now() + (tokens.expiry_date || 3600000)
-          ).toISOString(),
-          is_active: true,
-          last_synced_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id,property_id",
-        }
-      )
-      .select()
-      .single();
+    // Store in memory (for MVP - use Redis for production)
+    global.tempOAuthData = global.tempOAuthData || {};
+    global.tempOAuthData[tempToken] = {
+      userId,
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt: new Date(
+        Date.now() + (tokens.expiry_date || 3600000)
+      ).toISOString(),
+      properties,
+      createdAt: Date.now(),
+    };
 
-    if (error) {
-      console.error("Database error:", error);
-      return res.redirect(`${config.frontendUrls[0]}/dashboard?error=db_error`);
-    }
+    // Clean up old temp data (older than 10 minutes)
+    Object.keys(global.tempOAuthData).forEach((key) => {
+      if (Date.now() - global.tempOAuthData[key].createdAt > 10 * 60 * 1000) {
+        delete global.tempOAuthData[key];
+      }
+    });
 
-    console.log("💾 Connection saved to database");
-    console.log("💾 Connection saved to database");
-    console.log(
-      `🔀 Redirecting to: ${
-        config.frontendUrls[0]
-      }/dashboard?ga4_connected=true&property=${encodeURIComponent(
-        firstProperty.propertyName
-      )}`
-    );
+    console.log("🔀 Redirecting to property selector with temp token");
 
-    // Redirect back to dashboard with success
+    // Redirect to property selector with temp token
     res.redirect(
-      `${
-        config.frontendUrls[0]
-      }/dashboard?ga4_connected=true&property=${encodeURIComponent(
-        firstProperty.propertyName
-      )}`
+      `${config.frontendUrls[0]}/select-property?token=${tempToken}`
     );
   } catch (error) {
     console.error("Callback error:", error);
@@ -173,6 +160,63 @@ router.get("/properties", authenticateUser, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch properties" });
   }
 });
+
+/**
+ * ROUTE: Save selected GA4 property connection
+ * POST /api/ga4/save-connection
+ */
+router.post(
+  "/save-connection",
+  authenticateUser,
+  checkTrialStatus,
+  checkPropertyLimit,
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { propertyId, propertyName, accessToken, refreshToken, expiresAt } =
+        req.body;
+
+      if (!propertyId || !propertyName || !accessToken || !refreshToken) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Save connection to database
+      const { data, error } = await supabaseAdmin
+        .from("ga4_connections")
+        .upsert(
+          {
+            user_id: userId,
+            property_id: propertyId,
+            property_name: propertyName,
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            token_expires_at: expiresAt,
+            is_active: true,
+            last_synced_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "user_id,property_id",
+          }
+        )
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Failed to save connection:", error);
+        return res.status(500).json({ error: "Failed to save connection" });
+      }
+
+      res.json({
+        success: true,
+        connection: data,
+        propertyLimit: req.propertyLimit, // From middleware
+      });
+    } catch (error) {
+      console.error("Save connection error:", error);
+      res.status(500).json({ error: "Failed to save connection" });
+    }
+  }
+);
 
 /**
  * ROUTE 4: Disconnect GA4 property

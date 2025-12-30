@@ -156,7 +156,7 @@ async function processDailyInsightsForUser(userId) {
         console.error(`[Scheduler] Failed to update token:`, updateError);
       } else {
         accessToken = newTokens.access_token;
-        console.log(`[Scheduler] ✅ Token refreshed`);
+        console.log(`[Scheduler] Token refreshed`);
       }
     }
 
@@ -257,7 +257,7 @@ async function processDailyInsightsForUser(userId) {
       })
       .eq("user_id", userId);
 
-    console.log(`[Scheduler] ✅ Successfully processed user ${userId}`);
+    console.log(`[Scheduler] Successfully processed user ${userId}`);
     return {
       userId,
       success: true,
@@ -356,7 +356,7 @@ export function startDailySchedule() {
   );
 
   console.log(
-    "✅ Hourly scheduler started (checks every hour for due reports)"
+    "Hourly scheduler started (checks every hour for due reports)"
   );
 }
 

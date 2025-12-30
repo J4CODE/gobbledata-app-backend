@@ -2,7 +2,7 @@
 import { config } from "../config/index.js";
 
 // Statistical constants
-const Z_SCORE_THRESHOLD = 2.0; // 95% confidence (2 std deviations)
+const Z_SCORE_THRESHOLD = 1.5; // 95% confidence (2 std deviations)
 const MIN_DATA_POINTS = 7; // Need at least 1 week for meaningful stats
 const TREND_WINDOW = 5; // Days to determine if sustained trend
 
@@ -149,11 +149,7 @@ export const insightsService = {
       // Only flag if statistically significant (>2 std deviations = 95% confidence)
       if (Math.abs(zScore) >= Z_SCORE_THRESHOLD) {
         // Determine if spike or sustained trend
-        const trendType = this.classifyTrend(
-          sortedData,
-          metricName,
-          day.date
-        );
+        const trendType = this.classifyTrend(sortedData, metricName, day.date);
 
         // Calculate percent change
         const percentChange = (currentValue - expectedValue) / expectedValue;

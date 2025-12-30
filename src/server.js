@@ -20,6 +20,7 @@ import insightsRoutes from "./routes/insights.routes.js";
 console.log("✅ Step 4: Insights routes imported");
 import stripeRoutes from "./routes/stripe.routes.js";
 console.log("✅ Step 4.5: Stripe routes imported");
+import schedulerRoutes from "./routes/scheduler.routes.js";
 
 // Scheduler
 import { runNow as runSchedulerNow } from "./services/scheduler.service.js";
@@ -175,29 +176,6 @@ app.get("/health", (req, res) => {
 console.log("✅ Step 8: Health check registered");
 
 // ==================================================
-// MANUAL SCHEDULER TRIGGER (Remove in production after testing)
-// ==================================================
-
-app.post("/api/scheduler/run-now", async (req, res) => {
-  console.log("🔧 Manual scheduler trigger requested");
-  try {
-    const result = await runSchedulerNow();
-    res.json({
-      success: true,
-      message: "Scheduler ran successfully",
-      result,
-    });
-  } catch (error) {
-    console.error("❌ Scheduler error:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
-console.log("✅ Manual scheduler route enabled");
-
-// ==================================================
 // API ROUTES
 // ==================================================
 console.log("⏳ Registering API routes...");
@@ -213,6 +191,9 @@ console.log("  ✅ Insights routes registered");
 
 app.use("/api/stripe", stripeRoutes);
 console.log("  ✅ Stripe routes registered");
+
+app.use("/api/scheduler", schedulerRoutes);
+console.log("  ✅ Scheduler routes registered");
 
 // ==================================================
 // ERROR HANDLERS

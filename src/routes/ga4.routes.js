@@ -142,6 +142,92 @@ router.get("/callback", async (req, res) => {
   }
 });
 
+/**
+ * ROUTE: Get OAuth data from temporary token
+ * GET /api/ga4/oauth-data?token=TEMP_TOKEN
+ */
+router.get("/oauth-data", async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ error: "Token required" });
+    }
+
+    // Retrieve from global temp storage
+    const oauthData = global.tempOAuthData?.[token];
+
+    if (!oauthData) {
+      return res.status(404).json({
+        error: "Invalid or expired token",
+        message: "Session expired. Please reconnect from the dashboard.",
+      });
+    }
+
+    // Return OAuth data
+    res.json({
+      userId: oauthData.userId,
+      accessToken: oauthData.accessToken,
+      refreshToken: oauthData.refreshToken,
+      expiresAt: oauthData.expiresAt,
+      properties: oauthData.properties,
+    });
+  } catch (error) {
+    console.error("OAuth data retrieval error:", error);
+    res.status(500).json({ error: "Failed to retrieve OAuth data" });
+  }
+});
+
+/**
+ * ROUTE: Get user's property limit based on subscription
+ * GET /api/ga4/property-limit
+ */
+router.get("/property-limit", authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get user's subscription
+    const { data: subscription } = await supabaseAdmin
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    const planType = subscription?.plan_type || "free";
+
+    // Get current connection count
+    const { data: connections } = await supabaseAdmin
+      .from("ga4_connections")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    const currentCount = connections?.length || 0;
+
+    // Define limits
+    const limits = {
+      free: { limit: 1, name: "Free" },
+      pro: { limit: 4, name: "Pro" },
+      business: { limit: Infinity, name: "Business" },
+    };
+
+    const plan = limits[planType];
+    const limit = plan.limit;
+
+    res.json({
+      plan: planType,
+      planName: plan.name,
+      limit: limit === Infinity ? "Unlimited" : limit,
+      current: currentCount,
+      remaining:
+        limit === Infinity ? "Unlimited" : Math.max(0, limit - currentCount),
+    });
+  } catch (error) {
+    console.error("Property limit check error:", error);
+    res.status(500).json({ error: "Failed to check property limit" });
+  }
+});
+
 // Allow CORS preflight for /properties
 router.options("/properties", (req, res) => {
   res.status(200).end();

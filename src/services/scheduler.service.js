@@ -355,9 +355,7 @@ export function startDailySchedule() {
     }
   );
 
-  console.log(
-    "Hourly scheduler started (checks every hour for due reports)"
-  );
+  console.log("Hourly scheduler started (checks every hour for due reports)");
 }
 
 /**

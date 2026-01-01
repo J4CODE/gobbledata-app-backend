@@ -23,7 +23,10 @@ console.log("✅ Step 4.5: Stripe routes imported");
 import schedulerRoutes from "./routes/scheduler.routes.js";
 
 // Scheduler
-import { runNow as runSchedulerNow } from "./services/scheduler.service.js";
+import {
+  runNow as runSchedulerNow,
+  startDailySchedule,
+} from "./services/scheduler.service.js";
 console.log("✅ Step 5: Scheduler imported");
 
 const app = express();
@@ -254,6 +257,12 @@ app.listen(PORT, () => {
   console.log("\n" + "=".repeat(60) + "\n");
 
   console.log("✅ Server ready to accept connections\n");
+
+  console.log("✅ Server ready to accept connections\n");
+
+  // 🦃 START THE CRON JOB SCHEDULER
+  startDailySchedule();
+  console.log("✅ Daily insights scheduler started (runs hourly)\n");
 });
 
 // Graceful shutdown

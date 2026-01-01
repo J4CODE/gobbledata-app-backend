@@ -273,6 +273,7 @@ async function processDailyInsightsForUser(userId) {
 /**
  * Process daily insights for all active users
  */
+
 export async function runDailyInsightsJob() {
   console.log("\n==================================================");
   console.log(
@@ -280,7 +281,27 @@ export async function runDailyInsightsJob() {
   );
   console.log("==================================================\n");
 
+  const startTime = Date.now();
+  let runId = null;
+
   try {
+    // Create run log entry
+    const { data: runLog, error: logError } = await supabaseAdmin
+      .from("cron_job_runs")
+      .insert({
+        status: "running",
+        started_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (logError) {
+      console.error("[Scheduler] Failed to create run log:", logError);
+    } else {
+      runId = runLog.id;
+      console.log(`[Scheduler] Run ID: ${runId}`);
+    }
+
     // Fetch all users with active email preferences
     const { data: preferences, error } = await supabaseAdmin
       .from("email_preferences")
@@ -326,9 +347,44 @@ export async function runDailyInsightsJob() {
     console.log(`Failed: ${summary.failed}`);
     console.log("==================================================\n");
 
+    // Update run log with success
+    if (runId) {
+      const duration = Date.now() - startTime;
+      await supabaseAdmin
+        .from("cron_job_runs")
+        .update({
+          status: "success",
+          completed_at: new Date().toISOString(),
+          users_processed: summary.total,
+          emails_sent: summary.successful,
+          insights_found: summary.results
+            .filter((r) => r.success)
+            .reduce((sum, r) => sum + (r.insightsCount || 0), 0),
+          duration_ms: duration,
+        })
+        .eq("id", runId);
+
+      console.log(`[Scheduler] Run logged (${duration}ms)`);
+    }
+
     return { success: true, ...summary };
   } catch (error) {
     console.error("[Scheduler] Fatal error in daily insights job:", error);
+
+    // Update run log with failure
+    if (runId) {
+      const duration = Date.now() - startTime;
+      await supabaseAdmin
+        .from("cron_job_runs")
+        .update({
+          status: "failed",
+          completed_at: new Date().toISOString(),
+          errors: { message: error.message, stack: error.stack },
+          duration_ms: duration,
+        })
+        .eq("id", runId);
+    }
+
     return { success: false, error: error.message };
   }
 }

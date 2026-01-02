@@ -143,7 +143,7 @@ function generateEmailTemplate(insights, userName = "there") {
           <!-- Footer -->
           <div style="${styles.footer}">
             <p style="margin: 0 0 10px 0;">
-              © ${new Date().getFullYear()} GobbleData - Powered by AI
+              © ${new Date().getFullYear()} GobbleData - Algorithm-Powered GA4 Insights
             </p>
             <p style="margin: 0; font-size: 12px;">
               You're receiving this because you connected your GA4 account.
@@ -462,7 +462,7 @@ export async function sendWelcomeEmail(userId) {
                   <strong>1️⃣</strong> We're pulling 30 days of your GA4 data
                 </p>
                 <p style="margin: 0 0 12px 0; color: #1f2937; font-size: 15px;">
-                  <strong>2️⃣</strong> Our AI is scanning for unusual patterns (spikes, drops, trends)
+                  <strong>2️⃣</strong> Our algorithm is analyzing for unusual patterns (spikes, drops, trends)
                 </p>
                 <p style="margin: 0; color: #1f2937; font-size: 15px;">
                   <strong>3️⃣</strong> You'll get your first insights email within 24 hours

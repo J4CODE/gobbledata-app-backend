@@ -661,6 +661,31 @@ export async function runNowForCurrentUser(userId) {
 
     const duration = Date.now() - startTime;
 
+    // ✨ NEW: If no insights, send "no insights" email anyway (for testing)
+    if (!result.success && result.error === "No insights generated") {
+      console.log(
+        `[Scheduler] No insights found - sending "no insights" email for testing...`
+      );
+
+      const { sendNoInsightsEmail } = await import("./email.service.js");
+      const noInsightsResult = await sendNoInsightsEmail(userId);
+
+      if (noInsightsResult.success) {
+        // Update last email sent timestamp
+        await supabaseAdmin
+          .from("email_preferences")
+          .update({ last_email_sent_at: new Date().toISOString() })
+          .eq("user_id", userId);
+
+        console.log(`[Scheduler] "No insights" email sent successfully!`);
+
+        // Update result to success
+        result.success = true;
+        result.emailSent = true;
+        result.emailType = "no_insights";
+      }
+    }
+
     // Update run log
     if (runId) {
       await supabaseAdmin

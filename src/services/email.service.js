@@ -507,7 +507,7 @@ export async function sendWelcomeEmail(userId) {
             <!-- Footer -->
             <div style="text-align: center; padding: 30px 20px; color: #9ca3af; font-size: 13px;">
               <p style="margin: 0;">
-                © ${new Date().getFullYear()} GobbleData - AI-Powered GA4 Insights
+                © ${new Date().getFullYear()} GobbleData - Algorithm-Powered GA4 Insights
               </p>
             </div>
 
@@ -701,7 +701,7 @@ export async function sendNoInsightsEmail(userId) {
             <!-- Footer -->
             <div style="text-align: center; padding: 30px 20px; color: #9ca3af; font-size: 13px;">
               <p style="margin: 0;">
-                © ${new Date().getFullYear()} GobbleData - AI-Powered GA4 Insights
+                © ${new Date().getFullYear()} GobbleData - Algorithm-Powered GA4 Insights
               </p>
             </div>
 

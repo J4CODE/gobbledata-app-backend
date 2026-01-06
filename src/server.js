@@ -71,6 +71,10 @@ app.post(
 
           console.log(`✅ Payment successful for user ${userId}`);
 
+          // Calculate trial end date (30 days from now)
+          const trialEndsAt = new Date();
+          trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+
           // Update user's subscription in database
           const { supabaseAdmin } = await import(
             "./services/supabase.service.js"
@@ -79,12 +83,15 @@ app.post(
             .from("user_profiles")
             .update({
               subscription_tier: tier,
-              subscription_status: "active",
+              subscription_status: "trialing", // Changed from "active"
               stripe_subscription_id: session.subscription,
+              trial_ends_at: trialEndsAt.toISOString(),
             })
             .eq("id", userId);
 
-          console.log(`✅ Updated user ${userId} to ${tier} tier`);
+          console.log(
+            `✅ Updated user ${userId} to ${tier} tier (30-day trial)`
+          );
           break;
         }
 
@@ -114,6 +121,47 @@ app.post(
             .eq("stripe_customer_id", customerId);
 
           console.log(`⬇️  User downgraded to starter tier`);
+          break;
+        }
+
+        case "invoice.payment_succeeded": {
+          const invoice = event.data.object;
+          const customerId = invoice.customer;
+
+          // This fires after trial ends and first real payment succeeds
+          const { supabaseAdmin } = await import(
+            "./services/supabase.service.js"
+          );
+
+          await supabaseAdmin
+            .from("user_profiles")
+            .update({
+              subscription_status: "active", // Now paying customer
+            })
+            .eq("stripe_customer_id", customerId);
+
+          console.log(`✅ User activated after successful payment`);
+          break;
+        }
+
+        case "invoice.payment_failed": {
+          const invoice = event.data.object;
+          const customerId = invoice.customer;
+
+          // Payment failed - downgrade to starter
+          const { supabaseAdmin } = await import(
+            "./services/supabase.service.js"
+          );
+
+          await supabaseAdmin
+            .from("user_profiles")
+            .update({
+              subscription_tier: "starter",
+              subscription_status: "past_due",
+            })
+            .eq("stripe_customer_id", customerId);
+
+          console.log(`⚠️  Payment failed - user marked as past_due`);
           break;
         }
 

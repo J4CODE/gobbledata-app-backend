@@ -188,13 +188,22 @@ app.use(
       // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
 
+      // Log the origin for debugging
+      console.log("🔍 CORS request from origin:", origin);
+
       if (config.frontendUrls.includes(origin)) {
+        console.log("✅ CORS: Origin allowed");
         callback(null, true);
       } else {
+        console.log("❌ CORS: Origin blocked -", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    maxAge: 86400, // 24 hours
   })
 );
 

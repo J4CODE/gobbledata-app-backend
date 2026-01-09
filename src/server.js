@@ -6,34 +6,34 @@ import rateLimit from "express-rate-limit";
 import Stripe from "stripe";
 import { config } from "./config/index.js";
 
-console.log("✅ Step 1: Imports loaded");
+console.log("Step 1: Imports loaded");
 
 // Initialize Stripe
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Routes
 import authRoutes from "./routes/auth.routes.js";
-console.log("✅ Step 2: Auth routes imported");
+console.log("Step 2: Auth routes imported");
 import ga4Routes from "./routes/ga4.routes.js";
-console.log("✅ Step 3: GA4 routes imported");
+console.log("Step 3: GA4 routes imported");
 import insightsRoutes from "./routes/insights.routes.js";
-console.log("✅ Step 4: Insights routes imported");
+console.log("Step 4: Insights routes imported");
 import stripeRoutes from "./routes/stripe.routes.js";
-console.log("✅ Step 4.5: Stripe routes imported");
+console.log("Step 4.5: Stripe routes imported");
 import schedulerRoutes from "./routes/scheduler.routes.js";
 import emailPreferencesRoutes from "./routes/email-preferences.routes.js";
-console.log("✅ Step 4.6: Email preferences routes imported");
+console.log("Step 4.6: Email preferences routes imported");
 
 // Scheduler
 import {
   runNow as runSchedulerNow,
   startDailySchedule,
 } from "./services/scheduler.service.js";
-console.log("✅ Step 5: Scheduler imported");
+console.log("Step 5: Scheduler imported");
 
 const app = express();
 app.set("trust proxy", 1); // Trust first proxy (Render)
-console.log("✅ Step 6: Express app created");
+console.log("Step 6: Express app created");
 
 // ==================================================
 // STRIPE WEBHOOK - MUST BE BEFORE express.json()
@@ -69,7 +69,7 @@ app.post(
           const userId = session.metadata.supabase_user_id;
           const tier = session.metadata.subscription_tier;
 
-          console.log(`✅ Payment successful for user ${userId}`);
+          console.log(`Payment successful for user ${userId}`);
 
           // Calculate trial end date (30 days from now)
           const trialEndsAt = new Date();
@@ -89,9 +89,7 @@ app.post(
             })
             .eq("id", userId);
 
-          console.log(
-            `✅ Updated user ${userId} to ${tier} tier (30-day trial)`
-          );
+          console.log(`Updated user ${userId} to ${tier} tier (30-day trial)`);
           break;
         }
 
@@ -140,7 +138,7 @@ app.post(
             })
             .eq("stripe_customer_id", customerId);
 
-          console.log(`✅ User activated after successful payment`);
+          console.log(`User activated after successful payment`);
           break;
         }
 
@@ -189,10 +187,10 @@ app.use(
       if (!origin) return callback(null, true);
 
       // Log the origin for debugging
-      console.log("🔍 CORS request from origin:", origin);
+      console.log("CORS request from origin:", origin);
 
       if (config.frontendUrls.includes(origin)) {
-        console.log("✅ CORS: Origin allowed");
+        console.log("CORS: Origin allowed");
         callback(null, true);
       } else {
         console.log("❌ CORS: Origin blocked -", origin);
@@ -221,7 +219,7 @@ app.use("/api/", limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-console.log("✅ Step 7: Middleware configured");
+console.log("Step 7: Middleware configured");
 
 // ==================================================
 // HEALTH CHECK
@@ -235,30 +233,30 @@ app.get("/health", (req, res) => {
   });
 });
 
-console.log("✅ Step 8: Health check registered");
+console.log("Step 8: Health check registered");
 
 // ==================================================
 // API ROUTES
 // ==================================================
-console.log("⏳ Registering API routes...");
+console.log("Registering API routes...");
 
 app.use("/api/auth", authRoutes);
-console.log("  ✅ Auth routes registered");
+console.log("Auth routes registered");
 
 app.use("/api/ga4", ga4Routes);
-console.log("  ✅ GA4 routes registered");
+console.log("GA4 routes registered");
 
 app.use("/api/insights", insightsRoutes);
-console.log("  ✅ Insights routes registered");
+console.log("Insights routes registered");
 
 app.use("/api/stripe", stripeRoutes);
-console.log("  ✅ Stripe routes registered");
+console.log("Stripe routes registered");
 
 app.use("/api/scheduler", schedulerRoutes);
-console.log("  ✅ Scheduler routes registered");
+console.log("Scheduler routes registered");
 
 app.use("/api/email-preferences", emailPreferencesRoutes);
-console.log("  ✅ Email preferences routes registered");
+console.log("Email preferences routes registered");
 
 // ==================================================
 // ERROR HANDLERS
@@ -289,23 +287,23 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json(errorResponse);
 });
 
-console.log("✅ Step 9: Error handlers registered");
+console.log("Step 9: Error handlers registered");
 
 // ==================================================
 // START SERVER
 // ==================================================
 const PORT = config.port;
-console.log(`⏳ Starting server on port ${PORT}...`);
+console.log(`Starting server on port ${PORT}...`);
 
 app.listen(PORT, () => {
   console.log("\n" + "=".repeat(60));
-  console.log(`🚀 GOBBLEDATA SERVER RUNNING`);
-  console.log(`📊 Environment: ${config.nodeEnv}`);
-  console.log(`🔗 Port: ${PORT}`);
-  console.log(`🌐 Frontend: ${config.frontendUrl}`);
+  console.log(`GOBBLEDATA SERVER RUNNING`);
+  console.log(`Environment: ${config.nodeEnv}`);
+  console.log(`Port: ${PORT}`);
+  console.log(`Frontend: ${config.frontendUrl}`);
   console.log("=".repeat(60));
 
-  console.log("\n📍 Available Routes:");
+  console.log("\n Available Routes:");
   console.log("  GET  /health");
   console.log("  POST /webhook/stripe");
   if (config.nodeEnv === "development") {
@@ -318,13 +316,13 @@ app.listen(PORT, () => {
 
   console.log("\n" + "=".repeat(60) + "\n");
 
-  console.log("✅ Server ready to accept connections\n");
+  console.log("Server ready to accept connections\n");
 
-  console.log("✅ Server ready to accept connections\n");
+  console.log("Server ready to accept connections\n");
 
-  // 🦃 START THE CRON JOB SCHEDULER
+  // START THE CRON JOB SCHEDULER
   startDailySchedule();
-  console.log("✅ Daily insights scheduler started (runs hourly)\n");
+  console.log("Daily insights scheduler started (runs hourly)\n");
 });
 
 // Graceful shutdown

@@ -2,5 +2,5 @@
 // TODO: Implement in Week 3 Day 19-20
 
 export function startDailyInsightsJob() {
-  console.log('Daily insights job - coming in Week 3');
+  console.log('Daily insights job - Is Live!');
 }

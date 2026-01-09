@@ -88,7 +88,7 @@ export const insightsService = {
     ];
 
     console.log(
-      `📊 Analyzing ${sortedData.length} days across ${metricsToAnalyze.length} metrics`
+      `Analyzing ${sortedData.length} days across ${metricsToAnalyze.length} metrics`
     );
 
     // For each metric, run full statistical analysis
@@ -111,7 +111,7 @@ export const insightsService = {
     );
 
     console.log(
-      `✅ Found ${significantInsights.length} statistically significant insights`
+      `Found ${significantInsights.length} statistically significant insights`
     );
 
     return significantInsights.slice(0, 5); // Top 5 only

@@ -60,8 +60,8 @@ router.get("/test-time-check", authenticateUser, async (req, res) => {
       wouldSendNow: prefs.enabled && hourDiff <= 1,
       explanation:
         hourDiff <= 1
-          ? "✅ Would send now"
-          : `⏳ Will send in ~${hourDiff} hours`,
+          ? "Would send now"
+          : `Will send in ~${hourDiff} hours`,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -83,7 +83,7 @@ router.post("/test-email-now", authenticateUser, async (req, res) => {
     if (result.success) {
       res.json({
         success: true,
-        message: "✅ Email sent successfully!",
+        message: "Email sent successfully!",
         insightsCount: result.result?.insightsCount || 0,
         duration: result.duration,
         details: result.result,

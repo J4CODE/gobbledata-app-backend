@@ -154,7 +154,7 @@ router.put('/', authenticateUser, async (req, res) => {
       });
     }
 
-    console.log(`✅ Email preferences updated for user ${userId}:`, {
+    console.log(`Email preferences updated for user ${userId}:`, {
       delivery_time,
       timezone
     });

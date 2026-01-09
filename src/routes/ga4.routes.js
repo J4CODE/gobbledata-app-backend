@@ -152,14 +152,51 @@ router.get("/property-limit", authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { data: subscription } = await supabaseAdmin
+    // Get or create subscription
+    let { data: subscription, error } = await supabaseAdmin
       .from("subscriptions")
       .select("*")
       .eq("user_id", userId)
       .single();
 
+    // If no subscription exists, create free tier
+    if (error && error.code === "PGRST116") {
+      const { data: newSub, error: createError } = await supabaseAdmin
+        .from("subscriptions")
+        .insert({
+          user_id: userId,
+          plan_type: "free",
+          status: "active",
+          trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Failed to create subscription:", createError);
+        return res.status(500).json({ error: "Failed to create subscription" });
+      }
+
+      subscription = newSub;
+    } else if (error) {
+      console.error("Subscription query error:", error);
+      return res.status(500).json({ error: "Failed to fetch subscription" });
+    }
+
     const planType = subscription?.plan_type || "free";
 
+    // Import PLAN_LIMITS from middleware
+    const PLAN_LIMITS = {
+      starter: { properties: 1, name: "Starter" },
+      growth: { properties: 3, name: "Growth" },
+      pro: { properties: 10, name: "Pro" },
+      business: { properties: Infinity, name: "Business" },
+      free: { properties: 1, name: "Free Trial" },
+    };
+
+    const plan = PLAN_LIMITS[planType] || PLAN_LIMITS.free;
+
+    // Get current connections
     const { data: connections } = await supabaseAdmin
       .from("ga4_connections")
       .select("id")
@@ -167,15 +204,7 @@ router.get("/property-limit", authenticateUser, async (req, res) => {
       .eq("is_active", true);
 
     const currentCount = connections?.length || 0;
-
-    const limits = {
-      free: { limit: 1, name: "Free" },
-      pro: { limit: 4, name: "Pro" },
-      business: { limit: Infinity, name: "Business" },
-    };
-
-    const plan = limits[planType];
-    const limit = plan.limit;
+    const limit = plan.properties;
 
     res.json({
       plan: planType,

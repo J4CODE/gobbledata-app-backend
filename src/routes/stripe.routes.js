@@ -52,7 +52,7 @@ router.post("/create-checkout", async (req, res) => {
             .update({ stripe_customer_id: null })
             .eq("id", userId);
         } else {
-          console.log(`✅ Using existing Stripe customer ${customerId}`);
+          console.log(`Using existing Stripe customer ${customerId}`);
         }
       } catch (error) {
         console.log(`⚠️  Invalid customer ID ${customerId}, creating new one`);
@@ -195,7 +195,7 @@ router.post("/create-checkout-session", async (req, res) => {
             .update({ stripe_customer_id: null })
             .eq("id", user.id);
         } else {
-          console.log(`✅ Using existing Stripe customer ${customerId}`);
+          console.log(`Using existing Stripe customer ${customerId}`);
         }
       } catch (error) {
         console.log(`⚠️  Invalid customer ID ${customerId}, creating new one`);
@@ -227,7 +227,7 @@ router.post("/create-checkout-session", async (req, res) => {
         .eq("id", user.id);
 
       console.log(
-        `✅ Created Stripe customer ${customerId} for user ${user.id}`
+        `Created Stripe customer ${customerId} for user ${user.id}`
       );
     }
 
@@ -271,7 +271,7 @@ router.post("/create-checkout-session", async (req, res) => {
     });
 
     console.log(
-      `✅ Created checkout session ${session.id} for user ${user.id} (${tier} tier, 30-day trial)`
+      `Created checkout session ${session.id} for user ${user.id} (${tier} tier, 30-day trial)`
     );
 
     // 7. Return checkout URL
@@ -390,7 +390,7 @@ router.get("/verify-session", async (req, res) => {
       // Don't fail the request, just log the error
     } else {
       console.log(
-        `✅ Updated subscription for user ${user.id}: ${planName} (${subscription.status})`
+        `Updated subscription for user ${user.id}: ${planName} (${subscription.status})`
       );
     }
 

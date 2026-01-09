@@ -116,17 +116,17 @@ function generateEmailTemplate(insights, userName = "there") {
         <div style="${styles.container}">
           <!-- Header -->
           <div style="${styles.header}">
-            <h1 style="${styles.headerTitle}">🔥 GobbleData</h1>
+            <h1 style="${styles.headerTitle}">GobbleData</h1>
             <p style="${styles.headerSubtitle}">Your Daily GA4 Insights</p>
           </div>
 
           <!-- Content -->
           <div style="${styles.content}">
             <p style="${styles.greeting}">
-              Hey ${userName}! 👋
+              Hey ${userName}!
             </p>
             <p style="color: #6b7280; margin-bottom: 30px;">
-              Here are your top 3 insights from yesterday's Google Analytics data:
+              Here are your top insights from yesterday's Google Analytics data:
             </p>
 
             <!-- Insights -->
@@ -183,7 +183,7 @@ async function retryEmailSend(emailFunction, maxRetries = 3) {
       // If successful, return immediately
       if (result.success) {
         if (attempt > 1) {
-          console.log(`✅ Email succeeded on retry attempt ${attempt}`);
+          console.log(`Email succeeded on retry attempt ${attempt}`);
         }
         return result;
       }
@@ -272,7 +272,7 @@ export async function sendDailyInsights(userId, insights) {
       const { data, error } = await resend.emails.send({
         from: "GobbleData Insights <insights@gobbledata.com>",
         to: [user.email],
-        subject: `🔥 Your Daily GA4 Insights - ${new Date().toLocaleDateString(
+        subject: `Your Daily GA4 Insights - ${new Date().toLocaleDateString(
           "en-US",
           { month: "short", day: "numeric" }
         )}`,
@@ -287,7 +287,7 @@ export async function sendDailyInsights(userId, insights) {
         };
       }
 
-      console.log("✅ Email sent successfully:", {
+      console.log("Email sent successfully:", {
         emailId: data.id,
         to: user.email,
         timestamp: new Date().toISOString(),
@@ -367,7 +367,7 @@ export async function sendTestEmail(email) {
     const { data, error } = await resend.emails.send({
       from: "GobbleData Insights <insights@gobbledata.com>",
       to: [email],
-      subject: `🔥 Your Daily GA4 Insights - ${new Date().toLocaleDateString(
+      subject: `Your Daily GA4 Insights - ${new Date().toLocaleDateString(
         "en-US",
         { month: "short", day: "numeric" }
       )}`,
@@ -439,14 +439,14 @@ export async function sendWelcomeEmail(userId) {
             
             <!-- Header -->
             <div style="text-align: center; margin-bottom: 40px;">
-              <h1 style="margin: 0; font-size: 32px; color: #1f2937;">🔥 Welcome to GobbleData!</h1>
+              <h1 style="margin: 0; font-size: 32px; color: #1f2937;">Welcome to GobbleData!</h1>
             </div>
 
             <!-- Main Content -->
             <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
               
               <p style="font-size: 18px; color: #1f2937; margin: 0 0 20px 0;">
-                Hey ${userName}! 👋
+                Hey ${userName}!
               </p>
 
               <p style="font-size: 16px; color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
@@ -495,7 +495,7 @@ export async function sendWelcomeEmail(userId) {
               </p>
 
               <p style="font-size: 14px; color: #6b7280; margin: 10px 0 0 0;">
-                - The GobbleData Team 🦃
+                - The GobbleData Team
               </p>
 
               <p style="font-size: 13px; color: #9ca3af; margin: 20px 0 0 0; font-style: italic;">
@@ -521,7 +521,7 @@ export async function sendWelcomeEmail(userId) {
       const { data, error } = await resend.emails.send({
         from: "GobbleData Insights <insights@gobbledata.com>",
         to: [user.email],
-        subject: "✅ Your GA4 is connected - First insights coming soon!",
+        subject: "Your GA4 is connected - First insights coming soon!",
         html: htmlContent,
       });
 
@@ -533,7 +533,7 @@ export async function sendWelcomeEmail(userId) {
         };
       }
 
-      console.log("✅ Welcome email sent successfully:", {
+      console.log("Welcome email sent successfully:", {
         emailId: data.id,
         to: user.email,
         timestamp: new Date().toISOString(),
@@ -637,14 +637,14 @@ export async function sendNoInsightsEmail(userId) {
             
             <!-- Header -->
             <div style="text-align: center; margin-bottom: 40px;">
-              <h1 style="margin: 0; font-size: 32px; color: #1f2937;">⏳ Still Processing...</h1>
+              <h1 style="margin: 0; font-size: 32px; color: #1f2937;">Still Processing...</h1>
             </div>
 
             <!-- Main Content -->
             <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
               
               <p style="font-size: 18px; color: #1f2937; margin: 0 0 20px 0;">
-                Hey ${userName}! 👋
+                Hey ${userName}!
               </p>
 
               <p style="font-size: 16px; color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
@@ -716,7 +716,7 @@ export async function sendNoInsightsEmail(userId) {
         from: "GobbleData Insights <insights@gobbledata.com>",
         to: [user.email],
         subject:
-          "⏳ Your first insights are processing - here's what's happening",
+          "Your first insights are processing - here's what's happening",
         html: htmlContent,
       });
 
@@ -728,7 +728,7 @@ export async function sendNoInsightsEmail(userId) {
         };
       }
 
-      console.log("✅ No insights email sent successfully:", {
+      console.log("No insights email sent successfully:", {
         emailId: data.id,
         to: user.email,
         timestamp: new Date().toISOString(),

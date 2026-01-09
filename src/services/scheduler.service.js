@@ -75,9 +75,11 @@ async function processDailyInsightsForUser(
       return { userId, success: false, error: "User profile not found" };
     }
 
-    // Step 2: Check subscription status
-    if (userProfile.subscription_status !== "active") {
-      console.log(`[Scheduler] User ${userId} has inactive subscription`);
+    // Step 2: Check subscription status (allow active OR trialing)
+    if (!["active", "trialing"].includes(userProfile.subscription_status)) {
+      console.log(
+        `[Scheduler] User ${userId} has inactive subscription: ${userProfile.subscription_status}`
+      );
       return { userId, success: false, error: "Inactive subscription" };
     }
 

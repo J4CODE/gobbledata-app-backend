@@ -61,7 +61,7 @@ export const config = {
 };
 
 // Debug: verify GA4 config is loading
-console.log("🔍 GA4 Config Check:");
+console.log("GA4 Config Check:");
 console.log("Client ID:", config.ga4.clientId ? "SET ✓" : "MISSING ✗");
 console.log("Client Secret:", config.ga4.clientSecret ? "SET ✓" : "MISSING ✗");
 console.log("Redirect URI:", config.ga4.redirectUri);

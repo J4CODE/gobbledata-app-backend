@@ -129,7 +129,7 @@ export const ga4Service = {
       } = options;
 
       // DEBUG: Log what we're sending to Google
-      console.log("🔍 GA4 API Request Debug:");
+      console.log("GA4 API Request Debug:");
       console.log("  Property ID:", propertyId);
       console.log(
         "  Access Token (first 20 chars):",
@@ -172,7 +172,7 @@ export const ga4Service = {
           
           const newCredentials = await this.refreshAccessToken(refreshToken);
           
-          console.log("✅ Token refreshed successfully");
+          console.log("Token refreshed successfully");
           
           // Retry the request with new token
           oauth2Client.setCredentials({ 
@@ -214,9 +214,9 @@ export const ga4Service = {
       console.error("❌ Error fetching GA4 metrics:", error.message);
 
       // DEBUG: Log the full error from Google
-      console.log("🔍 Full error details:");
-      console.log("  Error code:", error.code);
-      console.log("  Error status:", error.status);
+      console.log("Full error details:");
+      console.log("Error code:", error.code);
+      console.log("Error status:", error.status);
       console.log(
         "  Error response:",
         JSON.stringify(error.response?.data, null, 2)
@@ -276,7 +276,7 @@ export const ga4Service = {
     });
 
     console.log(
-      `✅ Fetched ${dailyData.length} days of data for property ${propertyId}`
+      `Fetched ${dailyData.length} days of data for property ${propertyId}`
     );
 
     return {

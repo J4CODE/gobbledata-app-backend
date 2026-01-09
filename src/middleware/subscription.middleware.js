@@ -2,18 +2,28 @@
 import { supabaseAdmin } from "../services/supabase.service.js";
 
 // Plan limits configuration
+// Plan limits configuration
 const PLAN_LIMITS = {
-  free: {
+  starter: {
     properties: 1,
-    name: "Free",
+    name: "Starter",
+  },
+  growth: {
+    properties: 3,
+    name: "Growth",
   },
   pro: {
-    properties: 4,
+    properties: 10,
     name: "Pro",
   },
   business: {
     properties: Infinity,
     name: "Business",
+  },
+  // Legacy free tier (for existing users)
+  free: {
+    properties: 1,
+    name: "Free Trial",
   },
 };
 
@@ -84,6 +94,8 @@ export const checkTrialStatus = async (req, res, next) => {
   }
 };
 
+
+
 /**
  * Check if user can add more properties based on their plan
  */
@@ -107,7 +119,7 @@ export const checkPropertyLimit = async (req, res, next) => {
     // Get current active connections count
     const { data: connections, error } = await supabaseAdmin
       .from("ga4_connections")
-      .select("id")
+      .select("id, property_id")
       .eq("user_id", userId)
       .eq("is_active", true);
 
@@ -119,7 +131,25 @@ export const checkPropertyLimit = async (req, res, next) => {
     const currentCount = connections?.length || 0;
     const limit = planLimit.properties;
 
-    // Check if at or over limit
+    // Check if trying to add a property that already exists (upsert scenario)
+    const propertyId = req.body.propertyId;
+    const alreadyConnected = connections?.some(
+      (conn) => conn.property_id === propertyId
+    );
+
+    // If property already exists, allow the upsert (just updating existing connection)
+    if (alreadyConnected) {
+      req.propertyLimit = {
+        plan: planType,
+        planName: planLimit.name,
+        limit: limit,
+        current: currentCount,
+        remaining: limit === Infinity ? Infinity : limit - currentCount,
+      };
+      return next();
+    }
+
+    // Check if at or over limit for NEW properties
     if (currentCount >= limit) {
       return res.status(403).json({
         error: "Property limit reached",
@@ -129,7 +159,11 @@ export const checkPropertyLimit = async (req, res, next) => {
         upgradeRequired: planType !== "business",
         message: `You've reached your ${planLimit.name} plan limit of ${
           limit === Infinity ? "unlimited" : limit
-        } ${limit === 1 ? "property" : "properties"}.`,
+        } ${limit === 1 ? "property" : "properties"}. ${
+          planType !== "business"
+            ? "Please upgrade to add more properties."
+            : ""
+        }`,
       });
     }
 

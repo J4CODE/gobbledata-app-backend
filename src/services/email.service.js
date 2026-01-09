@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Generate HTML email template with insights
- * @param {Array} insights - Array of top 3 insights
+ * @param {Array} insights - Array of top insights
  * @param {string} userName - User's name for personalization
  * @returns {string} HTML email template
  */
@@ -94,7 +94,7 @@ function generateEmailTemplate(insights, userName = "there") {
       ).toLocaleString()})
         </span>
       </div>
-      <div style="${styles.actionTitle}">💡 Recommended Actions:</div>
+      <div style="${styles.actionTitle}">Recommended Actions:</div>
       <ul style="${styles.actionItems}">
         ${actionItems}
       </ul>
@@ -221,7 +221,7 @@ async function retryEmailSend(emailFunction, maxRetries = 3) {
 /**
  * Send daily insights email to user
  * @param {string} userId - User ID from Supabase
- * @param {Array} insights - Array of top 3 insights
+ * @param {Array} insights - Array of top insights
  * @returns {Object} Success status and message
  */
 export async function sendDailyInsights(userId, insights) {

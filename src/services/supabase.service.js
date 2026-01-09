@@ -73,7 +73,7 @@ export const supabaseService = {
         return { saved: 0, insights: [] };
       }
 
-      // Take top 3 insights only
+      // Take top insights only
       const topThree = insights.slice(0, 3);
 
       // Prepare insights for database

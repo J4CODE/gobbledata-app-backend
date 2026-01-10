@@ -59,9 +59,7 @@ router.get("/test-time-check", authenticateUser, async (req, res) => {
       hourDifference: hourDiff,
       wouldSendNow: prefs.enabled && hourDiff <= 1,
       explanation:
-        hourDiff <= 1
-          ? "Would send now"
-          : `Will send in ~${hourDiff} hours`,
+        hourDiff <= 1 ? "Would send now" : `Will send in ~${hourDiff} hours`,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

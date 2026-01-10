@@ -294,36 +294,33 @@ async function processDailyInsightsForUser(
     );
 
     // Step 11: Save insights to database (top 3 only)
-const topInsights = insights.slice(0, 3);
-const { error: saveError } = await supabaseAdmin
-  .from("daily_insights")
-  .upsert(
-    topInsights.map((insight, index) => ({
-      user_id: userId,
-      ga4_connection_id: connection.id,
-      insight_date: insight.date,
-      insight_type: "ANOMALY",
-      priority: index + 1,
-      metric_name: insight.metric,
-      metric_value: insight.currentValue,          // FIX #3: Change metric_value → current_value
-      baseline_value: insight.expectedValue,        // FIX #2: Change insight.baseline → insight.expectedValue
-      percent_change: insight.percentChange,
-      direction: insight.direction,
-      headline: insight.headline,
-      explanation: insight.explanation,
-      action_item: insight.actionItems.join("\n"),
-      impact_score: insight.impactScore,
-      supporting_data: null,
-      email_sent_at: null,
-    })),
-    {
-      onConflict: "user_id,insight_date,priority",
-      ignoreDuplicates: false,
-    }
-  );
-
-
-
+    const topInsights = insights.slice(0, 3);
+    const { error: saveError } = await supabaseAdmin
+      .from("daily_insights")
+      .upsert(
+        topInsights.map((insight, index) => ({
+          user_id: userId,
+          ga4_connection_id: connection.id,
+          insight_date: insight.date,
+          insight_type: "ANOMALY",
+          priority: index + 1,
+          metric_name: insight.metric,
+          metric_value: insight.currentValue, // FIX #3: Change metric_value → current_value
+          baseline_value: insight.expectedValue, // FIX #2: Change insight.baseline → insight.expectedValue
+          percent_change: insight.percentChange,
+          direction: insight.direction,
+          headline: insight.headline,
+          explanation: insight.explanation,
+          action_item: insight.actionItems.join("\n"),
+          impact_score: insight.impactScore,
+          supporting_data: null,
+          email_sent_at: null,
+        })),
+        {
+          onConflict: "user_id,insight_date,priority",
+          ignoreDuplicates: false,
+        }
+      );
 
     if (saveError) {
       console.error(`[Scheduler] Error saving insights:`, saveError);

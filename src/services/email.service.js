@@ -77,9 +77,6 @@ function generateEmailTemplate(insights, userName = "there") {
           ? "#ef4444"
           : "#6b7280";
 
-      const directionIcon =
-        direction === "up" ? "📈" : direction === "down" ? "📉" : "➡️";
-
       return `
     <div style="${styles.insightCard}">
       <div style="${styles.insightNumber}">INSIGHT #${index + 1}</div>
@@ -459,13 +456,13 @@ export async function sendWelcomeEmail(userId) {
 
               <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                 <p style="margin: 0 0 12px 0; color: #1f2937; font-size: 15px;">
-                  <strong>1️⃣</strong> We're pulling 30 days of your GA4 data
+                  <strong>1.</strong> We're pulling 30 days of your GA4 data
                 </p>
                 <p style="margin: 0 0 12px 0; color: #1f2937; font-size: 15px;">
-                  <strong>2️⃣</strong> Our algorithm is analyzing for unusual patterns (spikes, drops, trends)
+                  <strong>2.</strong> Our algorithm is analyzing for unusual patterns (spikes, drops, trends)
                 </p>
                 <p style="margin: 0; color: #1f2937; font-size: 15px;">
-                  <strong>3️⃣</strong> You'll get your first insights email within 24 hours
+                  <strong>3.</strong> You'll get your first insights email within 24 hours
                 </p>
               </div>
 
@@ -692,9 +689,10 @@ export async function sendNoInsightsEmail(userId) {
                 Questions? Just reply to this email.
               </p>
 
-              <p style="font-size: 14px; color: #6b7280; margin: 10px 0 0 0;">
-                - The GobbleData Team 🦃
-              </p>
+              <p style="font-size: 14px; color: #6b7280; margin: 10px 0 0 0; display: flex; align-items: center; gap: 8px;">
+  - The GobbleData Team 
+  <img src="https://gobbledata.com/assets/images/gobbledata-rex-head-logo-color.png" alt="Rex" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 4px;" />
+</p>
 
             </div>
 
@@ -715,8 +713,7 @@ export async function sendNoInsightsEmail(userId) {
       const { data, error } = await resend.emails.send({
         from: "GobbleData Insights <insights@gobbledata.com>",
         to: [user.email],
-        subject:
-          "Your first insights are processing - here's what's happening",
+        subject: "Your first insights are processing - here's what's happening",
         html: htmlContent,
       });
 

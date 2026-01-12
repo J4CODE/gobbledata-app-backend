@@ -189,20 +189,20 @@ async function retryEmailSend(emailFunction, maxRetries = 3) {
       if (attempt < maxRetries) {
         const delay = delays[attempt - 1];
         console.log(
-          `⚠️  Email attempt ${attempt} failed. Retrying in ${delay / 1000}s...`
+          `Email attempt ${attempt} failed. Retrying in ${delay / 1000}s...`
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
         // Final attempt failed
-        console.error(`❌ Email failed after ${maxRetries} attempts`);
+        console.error(`Email failed after ${maxRetries} attempts`);
         return result;
       }
     } catch (error) {
-      console.error(`❌ Email attempt ${attempt} threw error:`, error.message);
+      console.error(`Email attempt ${attempt} threw error:`, error.message);
 
       if (attempt < maxRetries) {
         const delay = delays[attempt - 1];
-        console.log(`⚠️  Retrying in ${delay / 1000}s...`);
+        console.log(`Retrying in ${delay / 1000}s...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
         return {
@@ -277,7 +277,7 @@ export async function sendDailyInsights(userId, insights) {
       });
 
       if (error) {
-        console.error("❌ Resend API error:", error);
+        console.error("Resend API error:", error);
         return {
           success: false,
           error: error.message,
@@ -307,7 +307,7 @@ export async function sendDailyInsights(userId, insights) {
 
     return emailResult;
   } catch (error) {
-    console.error("❌ Error sending daily insights email:", error);
+    console.error("Error sending daily insights email:", error);
     return {
       success: false,
       message: error.message,
@@ -523,7 +523,7 @@ export async function sendWelcomeEmail(userId) {
       });
 
       if (error) {
-        console.error("❌ Resend API error (welcome email):", error);
+        console.error("Resend API error (welcome email):", error);
         return {
           success: false,
           error: error.message,
@@ -566,13 +566,13 @@ export async function sendWelcomeEmail(userId) {
       });
 
     if (logError) {
-      console.error(`❌ Failed to log welcome email:`, logError);
+      console.error(`Failed to log welcome email:`, logError);
       // Don't fail the entire function, just log the error
     }
 
     return emailResult;
   } catch (error) {
-    console.error("❌ Error sending welcome email:", error);
+    console.error("Error sending welcome email:", error);
     return {
       success: false,
       message: error.message,
@@ -718,7 +718,7 @@ export async function sendNoInsightsEmail(userId) {
       });
 
       if (error) {
-        console.error("❌ Resend API error (no insights email):", error);
+        console.error("Resend API error (no insights email):", error);
         return {
           success: false,
           error: error.message,
@@ -748,7 +748,7 @@ export async function sendNoInsightsEmail(userId) {
 
     return emailResult;
   } catch (error) {
-    console.error("❌ Error sending no insights email:", error);
+    console.error("Error sending no insights email:", error);
     return {
       success: false,
       message: error.message,

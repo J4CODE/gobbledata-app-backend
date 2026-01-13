@@ -148,53 +148,37 @@ router.get("/oauth-data", async (req, res) => {
  * ROUTE: Get user's property limit based on subscription
  * GET /api/ga4/property-limit
  */
+/**
+ * ROUTE: Get user's property limit based on subscription
+ * GET /api/ga4/property-limit
+ */
 router.get("/property-limit", authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Get or create subscription
-    let { data: subscription, error } = await supabaseAdmin
-      .from("subscriptions")
-      .select("*")
-      .eq("user_id", userId)
+    // Get subscription tier from user_profiles (NOT subscriptions table)
+    const { data: profile, error } = await supabaseAdmin
+      .from("user_profiles")
+      .select("subscription_tier")
+      .eq("id", userId)
       .single();
 
-    // If no subscription exists, create free tier
-    if (error && error.code === "PGRST116") {
-      const { data: newSub, error: createError } = await supabaseAdmin
-        .from("subscriptions")
-        .insert({
-          user_id: userId,
-          plan_type: "free",
-          status: "active",
-          trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        console.error("Failed to create subscription:", createError);
-        return res.status(500).json({ error: "Failed to create subscription" });
-      }
-
-      subscription = newSub;
-    } else if (error) {
-      console.error("Subscription query error:", error);
+    if (error) {
+      console.error("Failed to fetch user profile:", error);
       return res.status(500).json({ error: "Failed to fetch subscription" });
     }
 
-    const planType = subscription?.plan_type || "free";
+    const planType = profile?.subscription_tier || "starter";
 
-    // Import PLAN_LIMITS from middleware
+    // Plan limits
     const PLAN_LIMITS = {
       starter: { properties: 1, name: "Starter" },
       growth: { properties: 3, name: "Growth" },
       pro: { properties: 10, name: "Pro" },
       business: { properties: Infinity, name: "Business" },
-      free: { properties: 1, name: "Free Trial" },
     };
 
-    const plan = PLAN_LIMITS[planType] || PLAN_LIMITS.free;
+    const plan = PLAN_LIMITS[planType] || PLAN_LIMITS.starter;
 
     // Get current connections
     const { data: connections } = await supabaseAdmin

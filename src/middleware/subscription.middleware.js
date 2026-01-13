@@ -70,7 +70,7 @@ export const checkTrialStatus = async (req, res, next) => {
     }
 
     // Check if trial expired for free users
-    if (subscription.plan_type === "free") {
+    if (subscription.plan_type === "starter") {
       const trialEndsAt = new Date(subscription.trial_ends_at);
       const now = new Date();
 
@@ -94,8 +94,6 @@ export const checkTrialStatus = async (req, res, next) => {
   }
 };
 
-
-
 /**
  * Check if user can add more properties based on their plan
  */
@@ -108,7 +106,7 @@ export const checkPropertyLimit = async (req, res, next) => {
       return res.status(500).json({ error: "Subscription not found" });
     }
 
-    const planType = subscription.plan_type || "free";
+    const planType = subscription.plan_type || "starter";
     const planLimit = PLAN_LIMITS[planType];
 
     if (!planLimit) {

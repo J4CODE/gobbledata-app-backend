@@ -226,9 +226,7 @@ router.post("/create-checkout-session", async (req, res) => {
         .update({ stripe_customer_id: customerId })
         .eq("id", user.id);
 
-      console.log(
-        `Created Stripe customer ${customerId} for user ${user.id}`
-      );
+      console.log(`Created Stripe customer ${customerId} for user ${user.id}`);
     }
 
     // 5. Determine tier from price ID

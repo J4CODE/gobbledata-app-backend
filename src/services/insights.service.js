@@ -6,6 +6,25 @@ const Z_SCORE_THRESHOLD = 1.5; // 95% confidence (2 std deviations)
 const MIN_DATA_POINTS = 7; // Need at least 1 week for meaningful stats
 const TREND_WINDOW = 5; // Days to determine if sustained trend
 
+// Metric weighting based on business impact
+const METRIC_WEIGHTS = {
+  // CRITICAL (3x) - Revenue/conversion impact
+  totalRevenue: 3.0,
+  conversions: 3.0,
+  purchaseProbability: 3.0,
+
+  // IMPORTANT (2x) - Engagement quality
+  engagementRate: 2.0,
+  averageEngagementTime: 2.0,
+  newUsers: 2.0,
+  churnProbability: 2.0,
+
+  // BASELINE (1x) - Volume metrics (mostly noise)
+  sessions: 1.0,
+  totalUsers: 1.0,
+  bounceRate: 0.5, // Deprecated metric
+};
+
 // Action items library
 const ACTION_LIBRARY = {
   bounceRate_up: [
@@ -58,16 +77,67 @@ const ACTION_LIBRARY = {
     "Review form fields (too many? confusing?)",
     "Test different offers or CTAs",
   ],
+  totalRevenue_up: [
+    "Identify which products/services drove the increase",
+    "Scale successful campaigns and channels",
+    "Consider upsell/cross-sell opportunities",
+  ],
+  totalRevenue_down: [
+    "Review pricing strategy and competitor pricing",
+    "Check for payment/checkout issues",
+    "Analyze customer feedback for product issues",
+  ],
+  averageEngagementTime_up: [
+    "Identify which content is keeping users engaged",
+    "Replicate successful content patterns",
+    "Test adding more interactive elements",
+  ],
+  averageEngagementTime_down: [
+    "Check page load speed and performance",
+    "Review content quality and relevance",
+    "A/B test different content formats",
+  ],
 };
 
 export const insightsService = {
+  /**
+   * Get available metrics from data (only analyze what exists)
+   * NEW: Prevents breaking when new metrics are added
+   */
+  getAvailableMetrics(dailyData) {
+    if (!dailyData || dailyData.length === 0) return [];
+
+    // Get first data point and check which metrics exist
+    const sampleData = dailyData[0];
+
+    // Prioritized list (will only use metrics that exist)
+    const desiredMetrics = [
+      "totalRevenue",
+      "conversions",
+      "purchaseProbability",
+      "engagementRate",
+      "averageEngagementTime",
+      "churnProbability",
+      "newUsers",
+      "sessions",
+      "totalUsers",
+      "bounceRate",
+    ];
+
+    // Only return metrics that exist in the data
+    return desiredMetrics.filter(
+      (metric) =>
+        sampleData.hasOwnProperty(metric) && sampleData[metric] !== undefined
+    );
+  },
+
   /**
    * MAIN ANALYSIS ENGINE
    * Uses statistical rigor to detect meaningful anomalies
    */
   async analyzeMetrics(dailyData, options = {}) {
     if (!dailyData || dailyData.length < MIN_DATA_POINTS) {
-      console.log(`⚠️  Need at least ${MIN_DATA_POINTS} days of data`);
+      console.log(`Need at least ${MIN_DATA_POINTS} days of data`);
       return [];
     }
 
@@ -78,17 +148,18 @@ export const insightsService = {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    // Metrics to analyze
-    const metricsToAnalyze = [
-      "sessions",
-      "totalUsers",
-      "conversions",
-      "engagementRate",
-      "bounceRate",
-    ];
+    // Dynamically detect available metrics
+    const metricsToAnalyze = this.getAvailableMetrics(sortedData);
+
+    if (metricsToAnalyze.length === 0) {
+      console.log("No valid metrics found in data");
+      return [];
+    }
 
     console.log(
-      `Analyzing ${sortedData.length} days across ${metricsToAnalyze.length} metrics`
+      `Analyzing ${sortedData.length} days across ${
+        metricsToAnalyze.length
+      } metrics: ${metricsToAnalyze.join(", ")}`
     );
 
     // For each metric, run full statistical analysis
@@ -97,7 +168,7 @@ export const insightsService = {
       insights.push(...metricInsights);
     }
 
-    // Sort by statistical significance (Z-score) then impact
+    // Sort by statistical significance (Z-score) then weighted impact
     insights.sort((a, b) => {
       if (Math.abs(b.zScore) !== Math.abs(a.zScore)) {
         return Math.abs(b.zScore) - Math.abs(a.zScore);
@@ -154,6 +225,9 @@ export const insightsService = {
         // Calculate percent change
         const percentChange = (currentValue - expectedValue) / expectedValue;
 
+        // Get metric weight (default to 1.0 if not defined)
+        const metricWeight = METRIC_WEIGHTS[metricName] || 1.0;
+
         insights.push({
           date: day.date,
           metric: metricName,
@@ -164,7 +238,7 @@ export const insightsService = {
           confidence: this.zScoreToConfidence(zScore),
           trendType: trendType,
           direction: percentChange > 0 ? "up" : "down",
-          impactScore: Math.abs(percentChange) * 100,
+          impactScore: Math.abs(percentChange) * 100 * metricWeight, // UPDATED: Now uses weighted scoring
           headline: this.generateHeadline(
             metricName,
             percentChange,
@@ -329,10 +403,14 @@ export const insightsService = {
     const names = {
       sessions: "Sessions",
       totalUsers: "Users",
+      newUsers: "New Users",
       conversions: "Conversions",
       engagementRate: "Engagement Rate",
+      averageEngagementTime: "Average Engagement Time",
       bounceRate: "Bounce Rate",
       totalRevenue: "Revenue",
+      purchaseProbability: "Purchase Probability",
+      churnProbability: "Churn Probability",
     };
     return names[metricName] || metricName;
   },
@@ -341,11 +419,14 @@ export const insightsService = {
    * Format metric values for display
    */
   formatMetricValue(metricName, value) {
-    if (metricName.includes("Rate")) {
+    if (metricName.includes("Rate") || metricName.includes("Probability")) {
       return `${(value * 100).toFixed(1)}%`;
     }
     if (metricName === "totalRevenue") {
       return `$${value.toFixed(2)}`;
+    }
+    if (metricName === "averageEngagementTime") {
+      return `${Math.round(value)}s`;
     }
     return Math.round(value).toString();
   },

@@ -447,7 +447,8 @@ async function shouldSendEmailNow(userId) {
  * Process daily insights for all active users
  */
 
-export async function runDailyInsightsJob() {
+export async function runDailyInsightsJob(options = {}) {
+  const { force = false } = options;
   console.log("\n==================================================");
   console.log(
     `[Scheduler] Starting daily insights job at ${new Date().toISOString()}`
@@ -501,10 +502,15 @@ export async function runDailyInsightsJob() {
       "[Scheduler] Checking which users should receive emails now...\n"
     );
 
+    // Bypass time checks if force mode enabled
+    if (force) {
+      console.log("[Scheduler] ⚡ FORCE MODE - bypassing time window checks\n");
+    }
+
     // Filter users based on their preferred delivery time
     const usersToProcess = [];
     for (const pref of preferences) {
-      const shouldSend = await shouldSendEmailNow(pref.user_id);
+      const shouldSend = force || (await shouldSendEmailNow(pref.user_id));
       if (shouldSend) {
         usersToProcess.push(pref);
       }
@@ -642,7 +648,7 @@ export function startDailySchedule() {
  */
 export async function runNow() {
   console.log("[Scheduler] Manual trigger - running job now...");
-  return await runDailyInsightsJob();
+  return await runDailyInsightsJob({ force: true });
 }
 
 /**
